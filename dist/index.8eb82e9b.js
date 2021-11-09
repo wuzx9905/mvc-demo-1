@@ -468,8 +468,8 @@ var _app2Js = require("./app2.js");
 var _app2JsDefault = parcelHelpers.interopDefault(_app2Js);
 var _app3Js = require("./app3.js");
 var _app4Js = require("./app4.js");
-_app1JsDefault.default.init('#app1');
-_app2JsDefault.default.init('#app2');
+_app1JsDefault.default('#app1');
+_app2JsDefault.default('#app2');
 
 },{"./reset.css":"hR0PW","./global.css":"g58Uw","./app1.js":"bZ3ho","./app2.js":"1hFYX","./app3.js":"39DIW","./app4.js":"jOilj","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ"}],"hR0PW":[function() {},{}],"g58Uw":[function() {},{}],"bZ3ho":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -479,85 +479,75 @@ var _jquery = require("jquery");
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
 var _modelJs = require("./base/Model.js");
 var _modelJsDefault = parcelHelpers.interopDefault(_modelJs);
-const eventBus = _jqueryDefault.default(window);
+var _viewJs = require("./base/View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _eventBus = require("./base/EventBus");
+var _eventBusDefault = parcelHelpers.interopDefault(_eventBus);
 const m = new _modelJsDefault.default({
     data: {
-        n: parseInt(localStorage.getItem('n'))
+        n: parseFloat(localStorage.getItem('n'))
     },
     update: function(data) {
         Object.assign(m.data, data); //把data所有的属性一个个赋值给m的data
-        eventBus.trigger('m:updated');
+        m.trigger('m:updated');
         localStorage.setItem('n', m.data.n);
     }
 });
 //所有跟视图相关的都放到V
 //其他都放到C
-const view = {
-    el: null,
-    html: `
-    <div>
-        <div class="output">
-            <span id="number">{{n}}</span>
+const init = (el)=>{
+    new _viewJsDefault.default({
+        el: el,
+        data: m.data,
+        html: `
+        <div>
+            <div class="output">
+                <span id="number">{{n}}</span>
+            </div>
+            <div id="actions">
+                <button id="add1">+1</button>
+                <button id="minus1">-1</button>
+                <button id="mul2">*2</button>
+                <button id="divide2">/2</button>
+             </div>
         </div>
-        <div id="actions">
-            <button id="add1">+1</button>
-            <button id="minus1">-1</button>
-            <button id="mul2">*2</button>
-            <button id="divide2">/2</button>
-         </div>
-    </div>
-    `,
-    init (container) {
-        view.el = _jqueryDefault.default(container);
-        view.render(m.data.n); //view = render(data)
-        view.autoBindEvents();
-        eventBus.on('m:updated', ()=>{
-            view.render(m.data.n);
-        });
-    },
-    render (n) {
-        if (view.el.children.length !== 0) view.el.empty();
-        _jqueryDefault.default(view.html.replace('{{n}}', n)).appendTo(view.el);
-    },
-    events: {
-        'click #add1': 'add',
-        'click #minus1': 'minus',
-        'click #mul2': 'mul',
-        'click #divide2': 'divide'
-    },
-    add () {
-        m.update({
-            n: m.data.n + 1
-        });
-    },
-    minus () {
-        m.update({
-            n: m.data.n - 1
-        });
-    },
-    mul () {
-        m.update({
-            n: m.data.n * 2
-        });
-    },
-    divide () {
-        m.update({
-            n: m.data.n / 2
-        });
-    },
-    autoBindEvents () {
-        for(let key in view.events){
-            const value = view[view.events[key]];
-            const spaceIndex = key.indexOf(' ');
-            const part1 = key.slice(0, spaceIndex);
-            const part2 = key.slice(spaceIndex + 1);
-            view.el.on(part1, part2, value);
+        `,
+        render (data) {
+            const n = data.n;
+            if (this.el.children.length !== 0) this.el.empty();
+            _jqueryDefault.default(this.html.replace('{{n}}', n)).appendTo(this.el);
+        },
+        events: {
+            'click #add1': 'add',
+            'click #minus1': 'minus',
+            'click #mul2': 'mul',
+            'click #divide2': 'divide'
+        },
+        add () {
+            m.update({
+                n: m.data.n + 1
+            });
+        },
+        minus () {
+            m.update({
+                n: m.data.n - 1
+            });
+        },
+        mul () {
+            m.update({
+                n: m.data.n * 2
+            });
+        },
+        divide () {
+            m.update({
+                n: m.data.n / 2
+            });
         }
-    }
+    });
 };
-exports.default = view;
+exports.default = init;
 
-},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app1.css":"cNEhT","./base/Model.js":"hPto4"}],"bE6My":[function(require,module,exports) {
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app1.css":"cNEhT","./base/Model.js":"hPto4","./base/View.js":"dLO3A","./base/EventBus":"11dZc"}],"bE6My":[function(require,module,exports) {
 /*!
  * jQuery JavaScript Library v3.6.0
  * https://jquery.com/
@@ -7402,8 +7392,11 @@ exports.export = function(dest, destName, get) {
 },{}],"cNEhT":[function() {},{}],"hPto4":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-class Model {
+var _eventBus = require("./EventBus");
+var _eventBusDefault = parcelHelpers.interopDefault(_eventBus);
+class Model extends _eventBusDefault.default {
     constructor(options){
+        super(); //调用EventBus#constructor
         [
             'data',
             'update',
@@ -7430,7 +7423,59 @@ class Model {
 }
 exports.default = Model;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ"}],"1hFYX":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./EventBus":"11dZc"}],"11dZc":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jquery = require("jquery");
+var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
+class EventBus {
+    constructor(){
+        this._eventBus = _jqueryDefault.default(window);
+    }
+    on(evenName, fn) {
+        return this._eventBus.on(evenName, fn);
+    }
+    trigger(evenName, data) {
+        return this._eventBus.trigger(evenName, data);
+    }
+    off(evenName, fn) {
+        return this._eventBus.off(evenName, fn);
+    }
+}
+exports.default = EventBus;
+
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ"}],"dLO3A":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jquery = require("jquery");
+var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
+var _eventBus = require("./EventBus");
+var _eventBusDefault = parcelHelpers.interopDefault(_eventBus);
+class View extends _eventBusDefault.default {
+    // constructor({ el, html, render, data, eventBus, events}) {
+    constructor(options){
+        super();
+        Object.assign(this, options);
+        this.el = _jqueryDefault.default(this.el);
+        this.render(this.data); //view = render(data)
+        this.autoBindEvents();
+        this.on('m:updated', ()=>{
+            this.render(this.data);
+        });
+    }
+    autoBindEvents() {
+        for(let key in this.events){
+            const value = this[this.events[key]];
+            const spaceIndex = key.indexOf(' ');
+            const part1 = key.slice(0, spaceIndex);
+            const part2 = key.slice(spaceIndex + 1);
+            this.el.on(part1, part2, value);
+        }
+    }
+}
+exports.default = View;
+
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./EventBus":"11dZc"}],"1hFYX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _app2Css = require("./app2.css");
@@ -7438,7 +7483,11 @@ var _jquery = require("jquery"); //多次引用也没事，已经设计好了
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
 var _modelJs = require("./base/Model.js");
 var _modelJsDefault = parcelHelpers.interopDefault(_modelJs);
-const eventBus = _jqueryDefault.default(window);
+var _viewJs = require("./base/View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _eventBus = require("./base/EventBus");
+var _eventBusDefault = parcelHelpers.interopDefault(_eventBus);
+const eventBus = new _eventBusDefault.default();
 const localKey = 'app2.index';
 //所有数据相关都放到M
 const m = new _modelJsDefault.default({
@@ -7453,56 +7502,44 @@ const m = new _modelJsDefault.default({
     }
 });
 //其他都放到C
-const view = {
-    el: null,
-    html: (index)=>{
-        return `
-    <div>
-    <ol class="tab-bar">
-        <li class="${index === 0 ? 'selected' : ''}" data-index="0"><span>1111</span> 1</li>
-        <li class="${index === 1 ? 'selected' : ''}" data-index="1"><span>2222</span> 2</li>
-    </ol>
-    <ol class="tab-content">
-        <li class="${index === 0 ? 'active' : ''}" >内容1</li>
-        <li class="${index === 1 ? 'active' : ''}" >内容2</li>
-    </ol>
-    </div>
-    `;
-    },
-    init (container) {
-        view.el = _jqueryDefault.default(container);
-        view.render(m.data.index); //view = render(data)
-        view.autoBindEvents();
-        eventBus.on('m:updated', ()=>{
-            view.render(m.data.index);
-        });
-    },
-    render (index) {
-        if (view.el.children.length !== 0) view.el.empty();
-        _jqueryDefault.default(view.html(index)).appendTo(view.el);
-    },
-    events: {
-        'click .tab-bar li': 'x'
-    },
-    x (e) {
-        const index = parseInt(e.currentTarget.dataset.index);
-        m.update({
-            index: index
-        });
-    },
-    autoBindEvents () {
-        for(let key in view.events){
-            const value = view[view.events[key]];
-            const spaceIndex = key.indexOf(' ');
-            const part1 = key.slice(0, spaceIndex);
-            const part2 = key.slice(spaceIndex + 1);
-            view.el.on(part1, part2, value);
+const init = (el)=>{
+    new _viewJsDefault.default({
+        el: el,
+        data: m.data,
+        eventBus: eventBus,
+        html: (index)=>{
+            return `
+        <div>
+        <ol class="tab-bar">
+            <li class="${index === 0 ? 'selected' : ''}" data-index="0"><span>1111</span> 1</li>
+            <li class="${index === 1 ? 'selected' : ''}" data-index="1"><span>2222</span> 2</li>
+        </ol>
+        <ol class="tab-content">
+            <li class="${index === 0 ? 'active' : ''}" >内容1</li>
+            <li class="${index === 1 ? 'active' : ''}" >内容2</li>
+        </ol>
+        </div>
+        `;
+        },
+        render (data) {
+            const index = data.index;
+            if (this.el.children.length !== 0) this.el.empty();
+            _jqueryDefault.default(this.html(index)).appendTo(this.el);
+        },
+        events: {
+            'click .tab-bar li': 'x'
+        },
+        x (e) {
+            const index = parseInt(e.currentTarget.dataset.index);
+            m.update({
+                index: index
+            });
         }
-    }
+    });
 };
-exports.default = view;
+exports.default = init;
 
-},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app2.css":"2POXe","./base/Model.js":"hPto4"}],"2POXe":[function() {},{}],"39DIW":[function(require,module,exports) {
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app2.css":"2POXe","./base/Model.js":"hPto4","./base/View.js":"dLO3A","./base/EventBus":"11dZc"}],"2POXe":[function() {},{}],"39DIW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _jquery = require("jquery");
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
