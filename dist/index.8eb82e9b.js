@@ -477,27 +477,22 @@ parcelHelpers.defineInteropFlag(exports);
 var _app1Css = require("./app1.css");
 var _jquery = require("jquery");
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
+var _modelJs = require("./base/Model.js");
+var _modelJsDefault = parcelHelpers.interopDefault(_modelJs);
 const eventBus = _jqueryDefault.default(window);
-//所有数据相关都放到M
-const m = {
-    //初始化数据
+const m = new _modelJsDefault.default({
     data: {
         n: parseInt(localStorage.getItem('n'))
     },
-    create () {
-    },
-    delete () {
-    },
-    update (data) {
+    update: function(data) {
         Object.assign(m.data, data); //把data所有的属性一个个赋值给m的data
         eventBus.trigger('m:updated');
         localStorage.setItem('n', m.data.n);
-    },
-    get () {
     }
-};
+});
 //所有跟视图相关的都放到V
-const v = {
+//其他都放到C
+const view = {
     el: null,
     html: `
     <div>
@@ -513,22 +508,16 @@ const v = {
     </div>
     `,
     init (container) {
-        v.el = _jqueryDefault.default(container);
+        view.el = _jqueryDefault.default(container);
+        view.render(m.data.n); //view = render(data)
+        view.autoBindEvents();
+        eventBus.on('m:updated', ()=>{
+            view.render(m.data.n);
+        });
     },
     render (n) {
-        if (v.el.children.length !== 0) v.el.empty();
-        _jqueryDefault.default(v.html.replace('{{n}}', n)).appendTo(v.el);
-    }
-};
-//其他都放到C
-const c = {
-    init (container) {
-        v.init(container);
-        v.render(m.data.n); //view = render(data)
-        c.autoBindEvents();
-        eventBus.on('m:updated', ()=>{
-            v.render(m.data.n);
-        });
+        if (view.el.children.length !== 0) view.el.empty();
+        _jqueryDefault.default(view.html.replace('{{n}}', n)).appendTo(view.el);
     },
     events: {
         'click #add1': 'add',
@@ -557,18 +546,18 @@ const c = {
         });
     },
     autoBindEvents () {
-        for(let key in c.events){
-            const value = c[c.events[key]];
+        for(let key in view.events){
+            const value = view[view.events[key]];
             const spaceIndex = key.indexOf(' ');
             const part1 = key.slice(0, spaceIndex);
             const part2 = key.slice(spaceIndex + 1);
-            v.el.on(part1, part2, value);
+            view.el.on(part1, part2, value);
         }
     }
 };
-exports.default = c;
+exports.default = view;
 
-},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app1.css":"cNEhT"}],"bE6My":[function(require,module,exports) {
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app1.css":"cNEhT","./base/Model.js":"hPto4"}],"bE6My":[function(require,module,exports) {
 /*!
  * jQuery JavaScript Library v3.6.0
  * https://jquery.com/
@@ -7410,34 +7399,61 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"cNEhT":[function() {},{}],"1hFYX":[function(require,module,exports) {
+},{}],"cNEhT":[function() {},{}],"hPto4":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Model {
+    constructor(options){
+        [
+            'data',
+            'update',
+            'create',
+            'delete',
+            'get'
+        ].forEach((key)=>{
+            if (key in options) this[key] = options[key];
+        });
+    }
+    create() {
+        //?.可选链语法
+        console?.error?.('你还没有实现create');
+    }
+    delete() {
+        console?.error?.('你还没有实现delete');
+    }
+    update() {
+        console?.error?.('你还没有实现update');
+    }
+    get() {
+        console?.error?.('你还没有实现get');
+    }
+}
+exports.default = Model;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ"}],"1hFYX":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _app2Css = require("./app2.css");
 var _jquery = require("jquery"); //多次引用也没事，已经设计好了
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);
+var _modelJs = require("./base/Model.js");
+var _modelJsDefault = parcelHelpers.interopDefault(_modelJs);
 const eventBus = _jqueryDefault.default(window);
 const localKey = 'app2.index';
 //所有数据相关都放到M
-const m = {
+const m = new _modelJsDefault.default({
     //初始化数据
-    localKey: 'app2.index',
     data: {
         index: parseInt(localStorage.getItem(localKey)) || 0
-    },
-    create () {
-    },
-    delete () {
     },
     update (data) {
         Object.assign(m.data, data); //把data所有的属性一个个赋值给m的data
         eventBus.trigger('m:updated');
         localStorage.setItem(localKey, m.data.index);
-    },
-    get () {
     }
-};
-const v = {
+});
+//其他都放到C
+const view = {
     el: null,
     html: (index)=>{
         return `
@@ -7454,22 +7470,16 @@ const v = {
     `;
     },
     init (container) {
-        v.el = _jqueryDefault.default(container);
+        view.el = _jqueryDefault.default(container);
+        view.render(m.data.index); //view = render(data)
+        view.autoBindEvents();
+        eventBus.on('m:updated', ()=>{
+            view.render(m.data.index);
+        });
     },
     render (index) {
-        if (v.el.children.length !== 0) v.el.empty();
-        _jqueryDefault.default(v.html(index)).appendTo(v.el);
-    }
-};
-//其他都放到C
-const c = {
-    init (container) {
-        v.init(container);
-        v.render(m.data.index); //view = render(data)
-        c.autoBindEvents();
-        eventBus.on('m:updated', ()=>{
-            v.render(m.data.index);
-        });
+        if (view.el.children.length !== 0) view.el.empty();
+        _jqueryDefault.default(view.html(index)).appendTo(view.el);
     },
     events: {
         'click .tab-bar li': 'x'
@@ -7481,18 +7491,18 @@ const c = {
         });
     },
     autoBindEvents () {
-        for(let key in c.events){
-            const value = c[c.events[key]];
+        for(let key in view.events){
+            const value = view[view.events[key]];
             const spaceIndex = key.indexOf(' ');
             const part1 = key.slice(0, spaceIndex);
             const part2 = key.slice(spaceIndex + 1);
-            v.el.on(part1, part2, value);
+            view.el.on(part1, part2, value);
         }
     }
 };
-exports.default = c;
+exports.default = view;
 
-},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app2.css":"2POXe"}],"2POXe":[function() {},{}],"39DIW":[function(require,module,exports) {
+},{"jquery":"bE6My","@parcel/transformer-js/src/esmodule-helpers.js":"cdZnQ","./app2.css":"2POXe","./base/Model.js":"hPto4"}],"2POXe":[function() {},{}],"39DIW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _jquery = require("jquery");
 var _jqueryDefault = parcelHelpers.interopDefault(_jquery);

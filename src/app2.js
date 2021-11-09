@@ -1,27 +1,26 @@
 import './app2.css';
 import $ from 'jquery';  //多次引用也没事，已经设计好了
+import Model from './base/Model.js';
 const eventBus = $(window)
 const localKey = 'app2.index';
 
 //所有数据相关都放到M
-const m = {
+const m = new Model({
     //初始化数据
-    localKey: 'app2.index',
     data: {
         index: parseInt(localStorage.getItem(localKey)) || 0
     },
-    create() { },
-    delete() { },
     update(data) {
         Object.assign(m.data, data);      //把data所有的属性一个个赋值给m的data
         eventBus.trigger('m:updated')
         localStorage.setItem(localKey, m.data.index)
     },
-    get() { }
-}
+})
 
 
-const v = {
+
+//其他都放到C
+const view = {
     el: null,
     html: (index) => {
         return `
@@ -37,27 +36,19 @@ const v = {
     </div>
     `},
     init(container) {
-        v.el = $(container);
+        view.el = $(container);
+        view.render(m.data.index);  //view = render(data)
+        view.autoBindEvents();
+        eventBus.on('m:updated', () => {
+            view.render(m.data.index)
+        })
     },
     render(index) {
-        if (v.el.children.length !== 0) {
-            v.el.empty();
+        if (view.el.children.length !== 0) {
+            view.el.empty();
         }
-        $(v.html(index))
-            .appendTo(v.el);
-    }
-}
-
-
-//其他都放到C
-const c = {
-    init(container) {
-        v.init(container);
-        v.render(m.data.index);  //view = render(data)
-        c.autoBindEvents();
-        eventBus.on('m:updated', () => {
-            v.render(m.data.index)
-        })
+        $(view.html(index))
+            .appendTo(view.el);
     },
     events: {
         'click .tab-bar li': 'x',
@@ -67,14 +58,14 @@ const c = {
         m.update({ index: index })
     },
     autoBindEvents() {
-        for (let key in c.events) {
-            const value = c[c.events[key]]
+        for (let key in view.events) {
+            const value = view[view.events[key]]
             const spaceIndex = key.indexOf(' ');
             const part1 = key.slice(0, spaceIndex);
             const part2 = key.slice(spaceIndex + 1);
-            v.el.on(part1, part2, value);
+            view.el.on(part1, part2, value);
         }
     }
 }
 
-export default c;
+export default view;
